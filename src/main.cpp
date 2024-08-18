@@ -1,6 +1,4 @@
-
 #include "controlm.h"
-
 
 void printDeckMode();
 void clockOutByte(byte data);
@@ -22,13 +20,14 @@ void sampleData() {
   
   if (bufferIndex == 16 && byteToSend != 0xFF) //Send a command if we have one
   {
-    //Serial.print ("Sending command: ");
-    //Serial.println (byteToSend, HEX);
     clockOutByte(byteToSend);
     //clockOutByte (0x0A);
     byteSendCount++;
     if (byteSendCount > 2)
-      byteToSend = 0xFF;
+    {
+      byteToSend = 0xFF; //TODO Why do I need to send the byte twice??
+      byteSendCount = 0;
+    }
     bufferIndex += 8;
   }
   
@@ -38,11 +37,14 @@ void setup() {
   // Initialize pins
   pinMode(CLK_PIN, INPUT);
   pinMode(DATA_PIN, INPUT);
-
+  //pinMode(TX_PIN, OUTPUT);
+  //pinMode(RX_PIN, INPUT);
+  
   // Attach interrupt to CLK_PIN
   attachInterrupt(digitalPinToInterrupt(CLK_PIN), sampleData, RISING);
   // Start serial communication for debugging
   Serial.begin(115200);
+  softSerial.begin(38400);
   delay(200);
   Serial.println("*************************************************************");
   Serial.println("******************BOOOOOOTIIIIIIING**************************");
@@ -107,7 +109,15 @@ void process_serial(){
     byteSendCount = 0;
   }
 }
-
+void process_softSerial(){
+  
+  while (softSerial.available() > 0) {
+    // Read the incoming byte
+    byteToSend = softSerial.read();
+    Serial.print ("softSerial: ");
+    Serial.println (byteToSend, HEX);
+  }
+}
 void process_buffer(){
   for (int i = 0; i < NUM_PACKETS; i++) {
         byte currentByte = 0;
@@ -147,6 +157,7 @@ void process_buffer(){
   else
     Serial.print (" RW ");
   printDeckMode();
+  
   //printByteAsBinary(data[0]);
       //Serial.println();
       
@@ -177,6 +188,7 @@ void loop() {
     process_buffer();
   }
   process_serial();
+  process_softSerial();
 }
 
 

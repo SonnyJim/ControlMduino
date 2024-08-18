@@ -1,7 +1,12 @@
 #include <Arduino.h>
+#include <SoftwareSerial.h>
+
+
 // Pin definitions
 const int CLK_PIN = 3;   // Interrupt pin
 const int DATA_PIN = 2;  // Data pin
+const int TX_PIN = 13;
+const int RX_PIN = 12;
 const int NUM_PACKETS = 7;
 const int PACKET_LENGTH = NUM_PACKETS * sizeof(byte) * 8;
 const int FRAME_DELAY = 12; // ms delay between packets
@@ -11,6 +16,8 @@ const int COUNTER_DEW=0x01;
 const int COUNTER_ELAPSED=0x02;
 //const int COUNTER_ELAPSED=0x03;
 
+SoftwareSerial softSerial (RX_PIN, TX_PIN, 1);
+byte ssData = 0;
 struct counter {
   byte sign_minus;
   int hours;
